@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tycoon Game With Rebirth System</title>
+<style>
+    body {
+        background: #1e1e1e;
+        color: #fff;
+        font-family: Arial;
+        margin: 0;
+        padding: 0;
+    }
+
+    h1 {
+        text-align: center;
+        padding-top: 20px;
+    }
+
+    #money, #prestigeDisplay {
+        font-size: 26px;
+        text-align: center;
+        margin: 5px 0;
+    }
+
+    /* CLICK AREA */
+    #clickArea {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    #lemonadeIcon {
+        width: 140px;
+        cursor: pointer;
+        transition: transform 0.1s;
+    }
+    #lemonadeIcon:active {
+        transform: scale(0.9);
+    }
+
+    /* Left + Right Menu Buttons */
+    #menuBtn, #shopBtn {
+        position: fixed;
+        top: 20px;
+        padding: 12px 20px;
+        background: #3498db;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        z-index: 20;
+    }
+    #menuBtn { left: 20px; }
+    #shopBtn { right: 20px; }
+
+    /* SIDE MENUS */
+    #upgradeMenu, #shopMenu {
+        position: fixed;
+        top: 0;
+        width: 300px;
+        height: 100%;
+        background: #222;
+        padding: 20px;
+        box-shadow: 3px 0 10px rgba(0,0,0,0.4);
+        transition: 0.3s;
+        z-index: 15;
+    }
+
+    #upgradeMenu { left: -300px; }
+    #upgradeMenu.open { left: 0; }
+
+    #shopMenu { right: -300px; }
+    #shopMenu.open { right: 0; }
+
+    .upgradeSection {
+        margin-bottom: 30px;
+    }
+
+    .upgradeBtn, .shopItem, .rebirthBtn {
+        width: 100%;
+        padding: 10px;
+        margin-top: 8px;
+        background: #27ae60;
+        border: none;
+        cursor: pointer;
+        color: white;
+        border-radius: 5px;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .rebirthBtn {
+        background: #9b59b6;
+    }
+    .rebirthBtn:hover {
+        background: #be72d8;
+    }
+
+    .shopItem:hover, .upgradeBtn:hover {
+        background: #2ecc71;
+    }
+
+    .game-container {
+        padding: 20px;
+        max-width: 900px;
+        margin: auto;
+    }
+
+    .business {
+        background: #282828;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 15px 0;
+    }
+
+    .progress {
+        background: #444;
+        height: 10px;
+        border-radius: 5px;
+        margin-top: 10px;
+        overflow: hidden;
+    }
+    .progress-fill {
+        height: 100%;
+        background: #2ecc71;
+        width: 0%;
+        transition: width 0.1s linear;
+    }
+</style>
+</head>
+<body>
+
+<h1>Tycoon Game</h1>
+<div id="money">$0</div>
+<div id="prestigeDisplay">Prestige Points: 0 | Bonus: +0%</div>
+
+<!-- MENU BUTTONS -->
+<button id="menuBtn" onclick="toggleMenu()">Upgrades</button>
+<button id="shopBtn" onclick="toggleShop()">Shop</button>
+
+<!-- UPGRADE MENU -->
+<div id="upgradeMenu">
+
+    <div class="upgradeSection">
+        <h3>Click Upgrades</h3>
+        <button class="upgradeBtn" id="clickUpgradeBtn" onclick="upgradeClickPower()"></button>
+        <p>Click Power: <span id="clickPowerText">1</span></p>
+    </div>
+
+    <hr style="border:1px solid #333">
+
+    <div class="upgradeSection">
+        <h3>🍋 Lemonade Stand Upgrade</h3>
+        <button class="upgradeBtn" id="lemonadeUpgradeBtn" onclick="upgradeBusiness('lemonade')"></button>
+    </div>
+
+    <div class="upgradeSection">
+        <h3>🏪 Small Shop Upgrade</h3>
+        <button class="upgradeBtn" id="shopUpgradeBtn" onclick="upgradeBusiness('shop')"></button>
+    </div>
+
+    <div class="upgradeSection">
+        <h3>🏭 Factory Upgrade</h3>
+        <button class="upgradeBtn" id="factoryUpgradeBtn" onclick="upgradeBusiness('factory')"></button>
+    </div>
+
+</div>
+
+<!-- SHOP MENU (RIGHT) -->
+<div id="shopMenu">
+
+    <div class="upgradeSection">
+        <h3>🍀 Double Click Chance</h3>
+        <button class="shopItem" id="doubleClickBtn" onclick="buyDoubleClick()">Buy ($100)</button>
+    </div>
+
+    <div class="upgradeSection">
+        <h3>⚡ Faster Auto Income</h3>
+        <button class="shopItem" id="speedBtn" onclick="buySpeed()">Buy ($200)</button>
+    </div>
+
+    <div class="upgradeSection">
+        <h3>💸 Global Income Boost</h3>
+        <button class="shopItem" id="globalBoostBtn" onclick="buyGlobalBoost()">Buy ($300)</button>
+    </div>
+
+    <hr style="border:1px solid #333">
+
+    <div class="upgradeSection">
+        <h3>🔥 REBIRTH</h3>
+        <p>Reset your game to gain Prestige Points.</p>
+        <button class="rebirthBtn" id="rebirthBtn" onclick="rebirth()">Rebirth (Need $1,000,000)</button>
+    </div>
+
+</div>
+
+<!-- CLICKABLE LEMONADE -->
+<div id="clickArea">
+    <img id="lemonadeIcon"
+         src="https://cdn-icons-png.flaticon.com/512/415/415733.png">
+    <p>Click to earn money!</p>
+</div>
+
+<!-- BUSINESSES -->
+<div class="game-container">
+
+    <div class="business">
+        <h2>🍋 Lemonade Stand</h2>
+        <p>Owned: <span id="lemonadeOwned">0</span></p>
+        <button class="upgradeBtn" id="lemonadeBuy" onclick="buyBusiness('lemonade')"></button>
+        <div class="progress"><div class="progress-fill" id="lemonadeBar"></div></div>
+    </div>
+
+    <div class="business">
+        <h2>🏪 Small Shop</h2>
+        <p>Owned: <span id="shopOwned">0</span></p>
+        <button class="upgradeBtn" id="shopBuy" onclick="buyBusiness('shop')"></button>
+        <div class="progress"><div class="progress-fill" id="shopBar"></div></div>
+    </div>
+
+    <div class="business">
+        <h2>🏭 Factory</h2>
+        <p>Owned: <span id="factoryOwned">0</span></p>
+        <button class="upgradeBtn" id="factoryBuy" onclick="buyBusiness('factory')"></button>
+        <div class="progress"><div class="progress-fill" id="factoryBar"></div></div>
+    </div>
+
+</div>
+
+<script>
+/* ===============================
+   CORE VARIABLES
+================================*/
+let money = 0;
+let clickValue = 1;
+let clickUpgradeCost = 25;
+
+let doubleClickChance = 0;
+let autoSpeed = 1000;
+let globalBoost = 1;
+
+/* === REBIRTH VARIABLES === */
+let prestige = 0; 
+let prestigeMultiplier = 1;  // increases by 10% per prestige point
+
+/* Costs */
+let doubleClickCost = 100;
+let speedCost = 200;
+let globalBoostCost = 300;
+
+/* BUSINESSES */
+let businesses = {
+    lemonade: {owned: 0, baseIncome: 1, level: 1, cost: 50, upgradeCost: 100, bar:"lemonadeBar"},
+    shop:     {owned: 0, baseIncome: 10, level: 1, cost: 250, upgradeCost: 500, bar:"shopBar"},
+    factory:  {owned: 0, baseIncome: 100, level: 1, cost: 1500, upgradeCost: 3000, bar:"factoryBar"}
+};
+
+/* ===============================
+   MENU TOGGLES
+================================*/
+function toggleMenu() { document.getElementById("upgradeMenu").classList.toggle("open"); }
+function toggleShop() { document.getElementById("shopMenu").classList.toggle("open"); }
+
+/* ===============================
+   CLICK EVENT
+================================*/
+document.getElementById("lemonadeIcon").onclick = () => {
+    let earned = clickValue * prestigeMultiplier;
+    if (Math.random() < doubleClickChance) earned *= 2;
+    money += earned;
+    updateDisplay();
+};
+
+/* ===============================
+   SHOP UPGRADES
+================================*/
+function buyDoubleClick() {
+    if (money >= doubleClickCost) {
+        money -= doubleClickCost;
+        doubleClickChance += 0.05;
+        doubleClickCost = Math.round(doubleClickCost * 1.5);
+        document.getElementById("doubleClickBtn").innerText = "Buy ($" + doubleClickCost + ")";
+        updateDisplay();
+    }
+}
+
+function buySpeed() {
+    if (money >= speedCost) {
+        money -= speedCost;
+        autoSpeed *= 0.9;
+        speedCost = Math.round(speedCost * 1.5);
+        document.getElementById("speedBtn").innerText = "Buy ($" + speedCost + ")";
+        updateDisplay();
+    }
+}
+
+function buyGlobalBoost() {
+    if (money >= globalBoostCost) {
+        money -= globalBoostCost;
+        globalBoost *= 1.10;
+        globalBoostCost = Math.round(globalBoostCost * 1.5);
+        document.getElementById("globalBoostBtn").innerText =
+            "Buy ($" + globalBoostCost + ")";
+        updateDisplay();
+    }
+}
+
+/* ===============================
+   REBIRTH SYSTEM
+================================*/
+function rebirth() {
+    if (money < 1000000) return alert("You need $1,000,000 to rebirth!");
+
+    let gained = Math.floor(money / 1000000);
+    prestige += gained;
+    prestigeMultiplier = 1 + (prestige * 0.10);
+
+    alert("Rebirth complete!\nYou gained " + gained + " Prestige Points.");
+
+    resetGame();
+}
+
+/* Reset everything except prestige */
+function resetGame() {
+    money = 0;
+    clickValue = 1;
+    clickUpgradeCost = 25;
+    doubleClickChance = 0;
+    autoSpeed = 1000;
+    globalBoost = 1;
+
+    doubleClickCost = 100;
+    speedCost = 200;
+    globalBoostCost = 300;
+
+    for (let b in businesses) {
+        businesses[b].owned = 0;
+        businesses[b].level = 1;
+        businesses[b].cost = businesses[b].cost / 1; // keep defaults
+        businesses[b].upgradeCost = businesses[b].upgradeCost / 1;
+    }
+
+    updateDisplay();
+}
+
+/* ===============================
+   UPGRADE & BUSINESS LOGIC
+================================*/
+function upgradeClickPower() {
+    if (money >= clickUpgradeCost) {
+        money -= clickUpgradeCost;
+        clickValue++;
+        clickUpgradeCost = Math.round(clickUpgradeCost * 1.5);
+        updateDisplay();
+    }
+}
+
+function buyBusiness(name) {
+    let biz = businesses[name];
+    if (money >= biz.cost) {
+        money -= biz.cost;
+        biz.owned++;
+        biz.cost = Math.round(biz.cost * 1.15);
+        updateDisplay();
+    }
+}
+
+function upgradeBusiness(name) {
+    let biz = businesses[name];
+    if (money >= biz.upgradeCost) {
+        money -= biz.upgradeCost;
+        biz.level++;
+        biz.upgradeCost = Math.round(biz.upgradeCost * 1.25);
+        updateDisplay();
+    }
+}
+
+/* ===============================
+   DISPLAY
+================================*/
+function updateDisplay() {
+    document.getElementById("money").innerText = "$" + money.toFixed(0);
+
+    document.getElementById("prestigeDisplay").innerText =
+        "Prestige Points: " + prestige + " | Bonus: +" + Math.round((prestigeMultiplier - 1) * 100) + "%";
+
+    document.getElementById("clickUpgradeBtn").innerText =
+        "Upgrade Click Power ($" + clickUpgradeCost + ")";
+    document.getElementById("clickPowerText").innerText = clickValue;
+
+    for (let b in businesses) {
+        const biz = businesses[b];
+        document.getElementById(b + "Owned").innerText = biz.owned;
+        document.getElementById(b + "Buy").innerText = "Buy ($" + biz.cost + ")";
+        document.getElementById(b + "UpgradeBtn").innerText =
+            "Upgrade ($" + biz.upgradeCost + ")";
+    }
+
+    document.getElementById("doubleClickBtn").innerText = "Buy ($" + doubleClickCost + ")";
+    document.getElementById("speedBtn").innerText = "Buy ($" + speedCost + ")";
+    document.getElementById("globalBoostBtn").innerText = "Buy ($" + globalBoostCost + ")";
+}
+updateDisplay();
+
+/* ===============================
+   AUTO INCOME
+================================*/
+setInterval(() => {
+    for (let b in businesses) {
+        let biz = businesses[b];
+        let bar = document.getElementById(biz.bar);
+
+        let width = parseFloat(bar.style.width || "0");
+        width += 10;
+
+        if (width >= 100) {
+            width = 0;
+            money += biz.owned * biz.baseIncome * biz.level * globalBoost * prestigeMultiplier;
+        }
+
+        bar.style.width = width + "%";
+    }
+
+    updateDisplay();
+}, 1000);
+</script>
+
+</body>
+</html>
